@@ -1,10 +1,10 @@
 const fs = require('fs');
 const path = require('path');
-const docbookToJson = require('./docbookToJson');
-const jsonToDocbook = require('./jsonToDocbook');
-const { validateDocbookXml } = require('./validateDocbook');
-const { loadSchema, validateJson } = require('./validateJsonSchema');
-const { ensureUniqueIds, verifyReferencesExist } = require('./idChecks');
+const docbookToJson = require('./converters/docbookToJson');
+const jsonToDocbook = require('./converters/jsonToDocbook');
+const { validateDocbookXml } = require('./validators/validateDocbook');
+const { loadSchema, validateJson } = require('./validators/validateJsonSchema');
+const { ensureUniqueIds, verifyReferencesExist } = require('./utils/idChecks');
 
 async function runConversionAndValidation(inputXmlPath, jsonSchemaPath, rngSchemaPath) {
   try {

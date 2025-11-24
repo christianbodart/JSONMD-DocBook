@@ -5,12 +5,13 @@ const assert = require('chai').assert;
 const deepEqual = require('deep-equal');
 const markdownIt = require('markdown-it')();
 
-const { convertJsonToDocbookXml, convertDocbookXmlToJson } = require('../src/converters');
+const convertJsonToDocbookXml = require('../src/converters/jsonToDocbook');
+const convertDocbookXmlToJson = require('../src/converters/docbookToJson');
 
 describe('Roundtrip Conversion Tests', function () {
-  it('should correctly convert footnotes from JSON-plus-markdown to DocBook XML and back', async function () {
-    const inputPath = path.resolve(__dirname, 'inputs/footnote-test.json');
-    const expectedDocbookPath = path.resolve(__dirname, 'expectedOutputs/footnote-test.xml');
+  it('should roundtrip an article without loss of data', async function () {
+    const inputPath = path.resolve(__dirname, 'expectedOutputs/article000.json');
+    const expectedDocbookPath = path.resolve(__dirname, 'inputs/article000.xml');
 
     const jsonInput = JSON.parse(fs.readFileSync(inputPath, 'utf8'));
     const expectedDocbookXml = fs.readFileSync(expectedDocbookPath, 'utf8').trim();
