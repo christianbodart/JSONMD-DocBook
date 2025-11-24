@@ -1,0 +1,21 @@
+{
+  "name": "jsonmd-docbook",
+  "version": "0.0.0",
+  "description": "Conversion and round-trip testing between JSON-plus-markdown and DocBook XML",
+  "main": "src/index.js",
+  "scripts": {
+    "test": "mocha tests/**/*.test.js --exit"
+  },
+  "dependencies": {
+    "xml2js": "^0.5.0",
+    "markdown-it": "^13.0.1",
+    "ajv": "^8.12.0",
+    "deep-equal": "^2.0.5"
+  },
+  "devDependencies": {
+    "mocha": "^10.2.0",
+    "chai": "^4.3.7"
+  },
+  "author": "Christian Bodart + Perplexity AI",
+  "license": "CC0-1.0"
+}
