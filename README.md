@@ -3,6 +3,7 @@ Experimental (AI assisted) toolkit for conversion, validation, and testing betwe
 
 ## Goals
 Personal - regain familiarity with js, node, github, schemas etc and explore using AI as an assistant 
+
 Technical - Create a JavaScript toolkit for bi-directional conversion, validation, and automated round-trip testing between JSON-plus-markdown and DocBook XML, supporting XML, JSON, and rendered HTML outputs for technical publishing workflows.
 
 ## Proposed Features
