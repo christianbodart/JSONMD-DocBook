@@ -3,6 +3,8 @@ const Ajv = require('ajv');
 
 const ajv = new Ajv({ allErrors: true });
 
+let validate;
+
 /**
  * Loads and compiles a JSON Schema from a given file path.
  * @param {string} schemaPath - Path to the JSON Schema file.
@@ -11,7 +13,8 @@ const ajv = new Ajv({ allErrors: true });
 function loadSchema(schemaPath) {
   const schemaData = fs.readFileSync(schemaPath, 'utf8');
   const schema = JSON.parse(schemaData);
-  return ajv.compile(schema);
+  validate = ajv.compile(schema);
+  return
 }
 
 /**
@@ -20,7 +23,12 @@ function loadSchema(schemaPath) {
  * @param {Function} validateFunc - AJV validation function.
  * @returns {Object} Validation result with isValid and errors array.
  */
-function validateJson(jsonData, validateFunc) {
+function validateJson(jsonData, validator) {
+  const validateFunc = validator || validate;
+  if (!validateFunc) {
+    throw new Error("Validator has not been loaded, call loadSchema() first.");
+  }
+
   const isValid = validateFunc(jsonData);
   return {
     isValid,
