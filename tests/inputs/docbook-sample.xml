@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<article xmlns="http://docbook.org/ns/docbook" version="5.0">
+  <title>Sample DocBook XML Test Document</title>
+  <section>
+    <title>Introduction</title>
+    <para>This is a <emphasis role="bold">sample</emphasis> paragraph to test text and emphasis elements.<footnote>This is a footnote example to test footnote elements.</footnote></para>
+    <para>Here is a list of items demonstrating list handling:</para>
+    <itemizedlist>
+      <listitem><para>First item</para></listitem>
+      <listitem><para>Second item with <emphasis role="italic">italic</emphasis> text</para></listitem>
+    </itemizedlist>
+  </section>
+  <section>
+    <title>Tables and Citations</title>
+    <para>The following table shows example data:</para>
+    <table>
+      <title>Sample Table</title>
+      <tgroup cols="2">
+        <thead>
+          <row>
+            <entry>Header 1</entry>
+            <entry>Header 2</entry>
+          </row>
+        </thead>
+        <tbody>
+          <row>
+            <entry>Cell 1</entry>
+            <entry>Cell 2</entry>
+          </row>
+          <row>
+            <entry>Cell 3</entry>
+            <entry>Cell 4</entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </table>
+    <para>As noted in <citation><citerefentry><refentrytitle>Reference Doc</refentrytitle></citerefentry></citation>, tables are important for data presentation.</para>
+  </section>
+  <section>
+    <title>Media Objects</title>
+    <mediaobject>
+      <imageobject>
+        <imagedata fileref="example.png" format="PNG" />
+      </imageobject>
+      <caption><para>Example Image</para></caption>
+    </mediaobject>
+  </section>
+</article>
