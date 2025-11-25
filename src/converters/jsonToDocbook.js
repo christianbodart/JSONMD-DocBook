@@ -3,64 +3,108 @@ const MarkdownIt = require('markdown-it');
 const md = new MarkdownIt({ breaks: true });
 
 // Helper: convert markdown inline tokens to DocBook nodes, handling emphasis, literal, footnotes, citations, marked/inserted text
-function markdownToDocbookNodes(text, parent) {
-  const lines = text.split(/\r?\n/);
-  lines.forEach((line, i) => {
-    if (i > 0) parent.ele('linebreak');
-    const tokens = md.parseInline(line, {});
-    const children = tokens[0].children || [];
-    for (const token of children) {
-      switch (token.type) {
-        case 'text':
-            parent.txt(token.content);
-            break;
-          case 'em_open':
-            const emphasis = parent.ele('emphasis', { role: 'bold' });
-            i++;
-            while (i < children.length && children[i].type !== 'em_close') {
-              emphasis.txt(children[i].content || '');
-              i++;
-            }
-            break;
-          case 'code_inline':
-            parent.ele('literal').txt(token.content);
-            break;
-          case 'footnote_reference':
-            // Add a footnoteref element; you need to parse footnote ids accordingly
-            parent.ele('footnoteref', { linkend: token.meta ? token.meta.id : '' });
-            break;
-          case 'link_open':
-            // Detect citation links like [@id]
-            const hrefAttr = token.attrs?.find(([name]) => name === 'href');
-            if (hrefAttr && hrefAttr[1].startsWith('#')) {
-              const citationId = hrefAttr[1].substring(1);
-              const cit = parent.ele('citation', { 'xlink:href': `#${citationId}` });
-              // Skip inline tokens until link_close
-              while (i < children.length && children[i].type !== 'link_close') i++;
-            }
-            break;
-          case 'mark_open':
-            const mark = parent.ele('phrase', { role: 'mark' });
-            i++;
-            while (i < children.length && children[i].type !== 'mark_close') {
-              mark.txt(children[i].content || '');
-              i++;
-            }
-            break;
-          case 'ins_open':
-            const ins = parent.ele('phrase', { role: 'ins' });
-            i++;
-            while (i < children.length && children[i].type !== 'ins_close') {
-              ins.txt(children[i].content || '');
-              i++;
-            }
-            break;
-          default:
-            parent.txt(token.content || '');
-            break;
+function markdownToDocbookNodes(markdownText, parent) {
+  const tokens = md.parseInline(markdownText, {});
+  let i = 0;
+  const children = tokens[0].children;
+
+  while (i < children.length) {
+    const token = children[i];
+    switch (token.type) {
+      case 'text':
+        parent.txt(token.content);
+        break;
+
+      case 'softbreak':
+      case 'hardbreak':
+        // Always write explicit <linebreak/> for any break token (hard or soft)
+        parent.ele('linebreak');
+        break;
+
+      case 'em_open':
+        // Emphasis (italic or bold, assume bold for Pandoc/DocBook mapping of *)
+        const em = parent.ele('emphasis', { role: 'bold' });
+        i++;
+        while (i < children.length && children[i].type !== 'em_close') {
+          markdownToDocbookNodes(children[i].content || children[i].markup, em);
+          i++;
         }
+        break;
+
+      case 'em_close':
+        // End of emphasis. Token is handled by the open tag logic above.
+        break;
+
+      case 'strong_open':
+        // Strong emphasis
+        const strong = parent.ele('emphasis', { role: 'bold' });
+        i++;
+        while (i < children.length && children[i].type !== 'strong_close') {
+          markdownToDocbookNodes(children[i].content || children[i].markup, strong);
+          i++;
+        }
+        break;
+
+      case 'strong_close':
+        break;
+
+      case 'code_inline':
+        parent.ele('literal').txt(token.content);
+        break;
+
+      case 'link_open':
+        // Footnote/citation detection depends on href or title attribute conventions—expand as needed.
+        const href = token.attrs?.find(([name]) => name === "href");
+        if (href && href[1].startsWith("#fn")) {
+          // Footnote references, e.g. href="#fn1"
+          parent.ele('footnoteref', { linkend: href[1].slice(1) });
+        } else if (href && href[1].startsWith("#cite")) {
+          // Citation references, e.g. href="#cite-id"
+          parent.ele('citation', { "xlink:href": href[1] });
+        }
+        // Move to link_close, skipping inline text
+        while (i < children.length && children[i].type !== 'link_close') i++;
+        break;
+
+      case 'link_close':
+        break;
+
+      case 'footnote_ref':
+        // If using markdown-it-footnote plugin
+        parent.ele('footnoteref', { linkend: token.meta && token.meta.id ? token.meta.id : '' });
+        break;
+
+      // Plugin: 'mark_open' and 'mark_close' for ==marked==
+      case 'mark_open':
+        const mark = parent.ele('phrase', { role: 'mark' });
+        i++;
+        while (i < children.length && children[i].type !== 'mark_close') {
+          markdownToDocbookNodes(children[i].content || children[i].markup, mark);
+          i++;
+        }
+        break;
+      case 'mark_close':
+        break;
+
+      // Plugin: 'ins_open' and 'ins_close' for ++inserted++
+      case 'ins_open':
+        const ins = parent.ele('phrase', { role: 'ins' });
+        i++;
+        while (i < children.length && children[i].type !== 'ins_close') {
+          markdownToDocbookNodes(children[i].content || children[i].markup, ins);
+          i++;
+        }
+        break;
+      case 'ins_close':
+        break;
+
+      default:
+        // Pipe through or ignore any other plugin extensions or custom tokens
+        if (token.content) parent.txt(token.content);
+        break;
     }
-  });
+    i++;
+  }
 }
 
 // Build <para> from paragraph JSON with markdown inline to DocBook

@@ -2,7 +2,8 @@
   <title>Sample Article</title>
   <section>
     <title>Introduction</title>
-    <para>This is a <emphasis role="bold">sample</emphasis> article paragraph with a footnote.<footnote id="fn1"><para>Footnote content.</para></footnote></para>
+    <para>This is a 
+    <emphasis role="bold">sample</emphasis> article paragraph with a footnote.<footnote id="fn1"><para>Footnote content.</para></footnote></para>
   </section>
   <bibliography>
     <bibliomixed id="bib1">
