@@ -20,6 +20,7 @@ Technical - Create a JavaScript toolkit for bi-directional conversion, validatio
 
 - Node.js (version 14 or higher)  
 - Installed dependencies via `npm install`  
+- (for running tests) pandoc client: https://pandoc.org/installing.html
 
 ### Installation
 
