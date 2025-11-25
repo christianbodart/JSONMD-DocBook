@@ -27,28 +27,9 @@
                   "type": "object",
                   "properties": {
                     "type": { "const": "paragraph" },
-                    "text": { "type": "string", "description": "Markdown text content" }
+                    "text": { "type": "string", "description": "Markdown text content including emphasis, footnotes, citations" }
                   },
                   "required": ["type", "text"],
-                  "additionalProperties": false
-                },
-                {
-                  "type": "object",
-                  "properties": {
-                    "type": { "const": "blockquote" },
-                    "text": { "type": "string", "description": "Markdown blockquote content" }
-                  },
-                  "required": ["type", "text"],
-                  "additionalProperties": false
-                },
-                {
-                  "type": "object",
-                  "properties": {
-                    "type": { "const": "image" },
-                    "src": { "type": "string", "format": "uri" },
-                    "alt": { "type": "string" }
-                  },
-                  "required": ["type", "src"],
                   "additionalProperties": false
                 },
                 {
@@ -70,6 +51,37 @@
                   },
                   "required": ["type", "headers", "rows"],
                   "additionalProperties": false
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "type": { "const": "image" },
+                    "caption": { "type": "string" },
+                    "src": { "type": "string", "format": "uri" },
+                    "alt": { "type": "string" }
+                  },
+                  "required": ["type", "src"],
+                  "additionalProperties": false
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "type": { "const": "deflist" },
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "term": { "type": "string" },
+                          "definition": { "type": "string" }
+                        },
+                        "required": ["term", "definition"],
+                        "additionalProperties": false
+                      }
+                    }
+                  },
+                  "required": ["type", "items"],
+                  "additionalProperties": false
                 }
               ]
             }
@@ -82,11 +94,11 @@
       "type": "array",
       "items": {
         "type": "object",
-        "required": ["id", "content"],
         "properties": {
           "id": { "type": "string" },
           "content": { "type": "string", "description": "Markdown content of the footnote" }
         },
+        "required": ["id", "content"],
         "additionalProperties": false
       }
     },
@@ -94,7 +106,6 @@
       "type": "array",
       "items": {
         "type": "object",
-        "required": ["id", "title", "authors"],
         "properties": {
           "id": { "type": "string" },
           "title": { "type": "string" },
@@ -105,29 +116,7 @@
           "year": { "type": "string" },
           "publisher": { "type": "string" }
         },
-        "additionalProperties": false
-      }
-    },
-    "appendices": {
-      "type": "array",
-      "items": {
-        "type": "object",
-        "properties": {
-          "title": { "type": "string" },
-          "content": {
-            "type": "array",
-            "items": {
-              "type": "object",
-              "properties": {
-                "type": { "const": "sectionNote" },
-                "content": { "type": "string" }
-              },
-              "required": ["type", "content"],
-              "additionalProperties": false
-            }
-          }
-        },
-        "required": ["title", "content"],
+        "required": ["id", "title", "authors"],
         "additionalProperties": false
       }
     }
