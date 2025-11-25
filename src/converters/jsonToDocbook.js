@@ -1,64 +1,66 @@
 const { create } = require('xmlbuilder2');
 const MarkdownIt = require('markdown-it');
-const md = new MarkdownIt();
+const md = new MarkdownIt({ breaks: true });
 
 // Helper: convert markdown inline tokens to DocBook nodes, handling emphasis, literal, footnotes, citations, marked/inserted text
 function markdownToDocbookNodes(text, parent) {
-  const tokens = md.parseInline(text, {});
-  const children = tokens[0].children;
-
-  for (let i = 0; i < children.length; i++) {
-    const token = children[i];
-    switch (token.type) {
-      case 'text':
-        parent.txt(token.content);
-        break;
-      case 'em_open':
-        const emphasis = parent.ele('emphasis', { role: 'bold' });
-        i++;
-        while (i < children.length && children[i].type !== 'em_close') {
-          emphasis.txt(children[i].content || '');
-          i++;
+  const lines = text.split(/\r?\n/);
+  lines.forEach((line, i) => {
+    if (i > 0) parent.ele('linebreak');
+    const tokens = md.parseInline(line, {});
+    const children = tokens[0].children || [];
+    for (const token of children) {
+      switch (token.type) {
+        case 'text':
+            parent.txt(token.content);
+            break;
+          case 'em_open':
+            const emphasis = parent.ele('emphasis', { role: 'bold' });
+            i++;
+            while (i < children.length && children[i].type !== 'em_close') {
+              emphasis.txt(children[i].content || '');
+              i++;
+            }
+            break;
+          case 'code_inline':
+            parent.ele('literal').txt(token.content);
+            break;
+          case 'footnote_reference':
+            // Add a footnoteref element; you need to parse footnote ids accordingly
+            parent.ele('footnoteref', { linkend: token.meta ? token.meta.id : '' });
+            break;
+          case 'link_open':
+            // Detect citation links like [@id]
+            const hrefAttr = token.attrs?.find(([name]) => name === 'href');
+            if (hrefAttr && hrefAttr[1].startsWith('#')) {
+              const citationId = hrefAttr[1].substring(1);
+              const cit = parent.ele('citation', { 'xlink:href': `#${citationId}` });
+              // Skip inline tokens until link_close
+              while (i < children.length && children[i].type !== 'link_close') i++;
+            }
+            break;
+          case 'mark_open':
+            const mark = parent.ele('phrase', { role: 'mark' });
+            i++;
+            while (i < children.length && children[i].type !== 'mark_close') {
+              mark.txt(children[i].content || '');
+              i++;
+            }
+            break;
+          case 'ins_open':
+            const ins = parent.ele('phrase', { role: 'ins' });
+            i++;
+            while (i < children.length && children[i].type !== 'ins_close') {
+              ins.txt(children[i].content || '');
+              i++;
+            }
+            break;
+          default:
+            parent.txt(token.content || '');
+            break;
         }
-        break;
-      case 'code_inline':
-        parent.ele('literal').txt(token.content);
-        break;
-      case 'footnote_reference':
-        // Add a footnoteref element; you need to parse footnote ids accordingly
-        parent.ele('footnoteref', { linkend: token.meta ? token.meta.id : '' });
-        break;
-      case 'link_open':
-        // Detect citation links like [@id]
-        const hrefAttr = token.attrs?.find(([name]) => name === 'href');
-        if (hrefAttr && hrefAttr[1].startsWith('#')) {
-          const citationId = hrefAttr[1].substring(1);
-          const cit = parent.ele('citation', { 'xlink:href': `#${citationId}` });
-          // Skip inline tokens until link_close
-          while (i < children.length && children[i].type !== 'link_close') i++;
-        }
-        break;
-      case 'mark_open':
-        const mark = parent.ele('phrase', { role: 'mark' });
-        i++;
-        while (i < children.length && children[i].type !== 'mark_close') {
-          mark.txt(children[i].content || '');
-          i++;
-        }
-        break;
-      case 'ins_open':
-        const ins = parent.ele('phrase', { role: 'ins' });
-        i++;
-        while (i < children.length && children[i].type !== 'ins_close') {
-          ins.txt(children[i].content || '');
-          i++;
-        }
-        break;
-      default:
-        parent.txt(token.content || '');
-        break;
     }
-  }
+  });
 }
 
 // Build <para> from paragraph JSON with markdown inline to DocBook

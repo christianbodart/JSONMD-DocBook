@@ -12,6 +12,9 @@ function convertMixedContent(node) {
     let result = '';
     for (const key in node) {
       switch (key) {
+        case 'linebreak':
+          result += '\n'; // Markdown line break
+          break;  
         case 'emphasis':
           // Treat emphasis role="bold" as *text*
           result += node[key].map(e => {
@@ -206,7 +209,15 @@ function parseBibliography(article) {
 }
 
 async function docbookToJson(docbookXml) {
-  const parser = new xml2js.Parser({ explicitChildren: true, preserveChildrenOrder: true, explicitArray: true, mergeAttrs: true, charsAsChildren: false });
+  const parser = new xml2js.Parser({
+  explicitChildren: true,
+  preserveChildrenOrder: true,
+  trim: false,              // Do not trim whitespace
+  explicitArray: true,
+  charsAsChildren: true,    // Preserve text nodes as children
+  includeWhiteChars: true,  // Include whitespace text nodes
+  charkey: '_'
+});
   const result = await parser.parseStringPromise(docbookXml);
 
   const article = result.article || result['db:article'];
