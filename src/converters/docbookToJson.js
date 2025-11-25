@@ -1,8 +1,6 @@
-// Conversion logic:  DocBook XML -> JSON-plus-markdown
-const fs = require('fs');
 const xml2js = require('xml2js');
 
-// Recursive helper to convert mixed content nodes to markdown text
+// Convert mixed content and inline elements to markdown text recursively
 function convertMixedContent(node) {
   if (typeof node === 'string') {
     return node;
@@ -15,28 +13,69 @@ function convertMixedContent(node) {
     for (const key in node) {
       switch (key) {
         case 'emphasis':
-          result += node[key].map(e => `*${convertMixedContent(e._ || e)}*`).join('');
+          // Treat emphasis role="bold" as *text*
+          result += node[key].map(e => {
+            const text = convertMixedContent(e._ || e);
+            if (e.$?.role === 'bold') {
+              return `*${text}*`;
+            }
+            return `_${text}_`; // fallback to _italic_
+          }).join('');
           break;
         case 'literal':
+          // Inline code with `code`
           result += node[key].map(lit => `\`${convertMixedContent(lit._ || lit)}\``).join('');
           break;
         case 'footnote':
-          result += node[key].map(fn => {
-            const id = fn.$?.id || '';
+          // Footnote text ignored here; footnotes handled separately
+          break;
+        case 'footnoteref':
+          // Footnote reference [^id]
+          result += node[key].map(ref => {
+            const id = ref.$?.linkend || '';
             return `[^${id}]`;
           }).join('');
           break;
         case 'citation':
+          // Citation reference [@id]
           result += node[key].map(cit => {
             const id = cit.$?.['xlink:href']?.replace(/^#/, '') || '';
             return `[@${id}]`;
           }).join('');
           break;
+        case 'phrase':
+          // Marked text with role="mark", inserted text with role="ins"
+          result += node[key].map(p => {
+            const text = convertMixedContent(p._ || p);
+            if (p.$?.role === 'mark') {
+              return `==${text}==`; // marked text
+            }
+            if (p.$?.role === 'ins') {
+              return `++${text}++`; // inserted text
+            }
+            return text;
+          }).join('');
+          break;
+        case 'abbrev':
+          // Abbreviation as *[abbr]: Full text* handled in footnotes/bibliography maybe
+          result += node[key].map(abbr => convertMixedContent(abbr._ || abbr)).join('');
+          break;
+        case 'variablelist':
+          // Convert DocBook definition list to markdown deflist syntax
+          const entries = node[key].flatMap(vl => {
+            return vl.varlistentry?.map(ve => {
+              const term = ve.term?.[0] || '';
+              const def = ve.listitem?.[0].para?.[0] || '';
+              return `${term}\n: ${def}\n`;
+            }) || [];
+          });
+          result += entries.join('\n');
+          break;
         case '_':
           result += node._;
           break;
         default:
-          // Recursively process child elements
+          // Recursively process other children
           if (Array.isArray(node[key])) {
             result += node[key].map(convertMixedContent).join('');
           }
@@ -48,7 +87,7 @@ function convertMixedContent(node) {
   return '';
 }
 
-// Convert <para> elements to paragraph JSON
+// Parse paragraphs including markdown inline conversions
 function parseParagraphs(paras) {
   return paras.map(p => ({
     type: 'paragraph',
@@ -56,14 +95,23 @@ function parseParagraphs(paras) {
   }));
 }
 
-// Convert <section> elements recursively
+// Parse sections recursively
 function parseSections(sections) {
   return sections.map(section => {
     const title = section.title?.[0] || '';
-    const content = [];
+    let content = [];
 
     if (section.para) {
       content.push(...parseParagraphs(section.para));
+    }
+    if (section.variablelist) {
+      // Treat variablelist as definition list paragraphs
+      section.variablelist.forEach(vl => {
+        content.push({
+          type: 'paragraph',
+          text: convertMixedContent(vl)
+        });
+      });
     }
     if (section.section) {
       content.push(...parseSections(section.section));
@@ -74,16 +122,12 @@ function parseSections(sections) {
     if (section.figure) {
       content.push(...parseFigures(section.figure));
     }
-    // Add other block-level elements as needed
 
-    return {
-      title,
-      content
-    };
+    return { title, content };
   });
 }
 
-// Convert <table> elements
+// Parse tables
 function parseTables(tables) {
   return tables.map(table => {
     const caption = table.caption?.[0] || '';
@@ -99,7 +143,7 @@ function parseTables(tables) {
   });
 }
 
-// Convert <figure> elements
+// Parse figures
 function parseFigures(figures) {
   return figures.map(figure => {
     const caption = figure.title?.[0] || '';
@@ -117,7 +161,7 @@ function parseFigures(figures) {
   });
 }
 
-// Parse footnotes from the document
+// Parse footnotes fully
 function parseFootnotes(article) {
   const footnotes = [];
   if (!article.footnote) return footnotes;
@@ -132,7 +176,7 @@ function parseFootnotes(article) {
   return footnotes;
 }
 
-// Parse bibliography
+// Parse bibliography entries
 function parseBibliography(article) {
   const bibliography = [];
   if (!article.bibliography) return bibliography;
@@ -170,14 +214,12 @@ async function docbookToJson(docbookXml) {
     throw new Error("No <article> element found in the XML");
   }
 
-  const json = {
+  return {
     title: article.title?.[0] || '',
     sections: parseSections(article.section || []),
     footnotes: parseFootnotes(article),
     bibliography: parseBibliography(article)
   };
-
-  return json;
 }
 
 module.exports = docbookToJson;

@@ -2,10 +2,7 @@ const { create } = require('xmlbuilder2');
 const MarkdownIt = require('markdown-it');
 const md = new MarkdownIt();
 
-/**
- * Convert markdown inline tokens to DocBook XML elements recursively.
- * This handles emphasis (*text*), code (`text`), footnote refs ([^id]), citations ([@id]).
- */
+// Helper: convert markdown inline tokens to DocBook nodes, handling emphasis, literal, footnotes, citations, marked/inserted text
 function markdownToDocbookNodes(text, parent) {
   const tokens = md.parseInline(text, {});
   const children = tokens[0].children;
@@ -20,48 +17,57 @@ function markdownToDocbookNodes(text, parent) {
         const emphasis = parent.ele('emphasis', { role: 'bold' });
         i++;
         while (i < children.length && children[i].type !== 'em_close') {
-          if (children[i].type === 'text') {
-            emphasis.txt(children[i].content);
-          }
+          emphasis.txt(children[i].content || '');
           i++;
         }
         break;
       case 'code_inline':
         parent.ele('literal').txt(token.content);
         break;
-      case 'footnote_reference': // markdown-it footnote plugin token (custom handling may be needed)
-        // typically, [^id] is parsed as footnote_reference with id attr
-        parent.ele('footnoteref', { linkend: token.meta.id || '' });
+      case 'footnote_reference':
+        // Add a footnoteref element; you need to parse footnote ids accordingly
+        parent.ele('footnoteref', { linkend: token.meta ? token.meta.id : '' });
         break;
       case 'link_open':
-        // Check if this is a citation: [@id]
-        if (token.attrs && token.attrs.find(([k, v]) => k === 'href' && v.startsWith('#'))) {
-          const href = token.attrs.find(([k, v]) => k === 'href')[1];
-          const citationId = href.slice(1);
-          parent.ele('citation', { 'xlink:href': `#${citationId}` });
-          // Consume inline text and closing link
-          while (children[i].type !== 'link_close') i++;
+        // Detect citation links like [@id]
+        const hrefAttr = token.attrs?.find(([name]) => name === 'href');
+        if (hrefAttr && hrefAttr[1].startsWith('#')) {
+          const citationId = hrefAttr[1].substring(1);
+          const cit = parent.ele('citation', { 'xlink:href': `#${citationId}` });
+          // Skip inline tokens until link_close
+          while (i < children.length && children[i].type !== 'link_close') i++;
+        }
+        break;
+      case 'mark_open':
+        const mark = parent.ele('phrase', { role: 'mark' });
+        i++;
+        while (i < children.length && children[i].type !== 'mark_close') {
+          mark.txt(children[i].content || '');
+          i++;
+        }
+        break;
+      case 'ins_open':
+        const ins = parent.ele('phrase', { role: 'ins' });
+        i++;
+        while (i < children.length && children[i].type !== 'ins_close') {
+          ins.txt(children[i].content || '');
+          i++;
         }
         break;
       default:
-        // handle other inline tokens or skip
         parent.txt(token.content || '');
         break;
     }
   }
 }
 
-/**
- * Helper to build a <para> with parsed markdown inside.
- */
+// Build <para> from paragraph JSON with markdown inline to DocBook
 function buildPara(parent, paragraph) {
   const para = parent.ele('para');
   markdownToDocbookNodes(paragraph.text, para);
 }
 
-/**
- * Build a <section> recursively including subsections and content blocks.
- */
+// Build <section> recursively with subsections and blocks
 function buildSection(parent, section) {
   const sec = parent.ele('section');
   sec.ele('title').txt(section.title);
@@ -76,17 +82,17 @@ function buildSection(parent, section) {
       case 'image':
         buildFigure(sec, block);
         break;
-      // Expand for lists, admonitions etc.
+      case 'deflist':
+        buildDefinitionList(sec, block);
+        break;
+      // Expand for other types as needed
       default:
-        // Unknown content types ignored for now
         break;
     }
   });
 }
 
-/**
- * Build a <table> element from JSON representation.
- */
+// Build <table> from JSON representation
 function buildTable(parent, table) {
   const t = parent.ele('table');
   t.ele('title').txt(table.caption || '');
@@ -103,9 +109,7 @@ function buildTable(parent, table) {
   });
 }
 
-/**
- * Build a <figure> element with image.
- */
+// Build <figure> element with image
 function buildFigure(parent, image) {
   const fig = parent.ele('figure');
   if (image.caption) {
@@ -116,9 +120,18 @@ function buildFigure(parent, image) {
   imageobject.ele('imagedata', { fileref: image.src, alttxt: image.alt || '' });
 }
 
-/**
- * Build footnotes section.
- */
+// Build definition list (<variablelist>) from JSON deflist type
+function buildDefinitionList(parent, deflist) {
+  const vl = parent.ele('variablelist');
+  deflist.items.forEach(item => {
+    const entry = vl.ele('varlistentry');
+    entry.ele('term').txt(item.term);
+    const li = entry.ele('listitem');
+    li.ele('para').txt(item.definition);
+  });
+}
+
+// Build footnotes
 function buildFootnotes(parent, footnotes) {
   footnotes.forEach(fn => {
     const fnEl = parent.ele('footnote', { id: fn.id });
@@ -126,9 +139,7 @@ function buildFootnotes(parent, footnotes) {
   });
 }
 
-/**
- * Build bibliography section.
- */
+// Build bibliography
 function buildBibliography(parent, bibliography) {
   const bibEl = parent.ele('bibliography');
   bibliography.forEach(item => {
@@ -146,15 +157,15 @@ function buildBibliography(parent, bibliography) {
   });
 }
 
-/**
- * Main function: convert JSON-plus-markdown to DocBook XML string.
- */
+// Main JSON to DocBook conversion method updated:
 function jsonToDocbook(json) {
   const doc = create({ version: '1.0', encoding: 'UTF-8' }).ele('article');
   doc.ele('title').txt(json.title);
 
   if (Array.isArray(json.sections)) {
-    json.sections.forEach(section => buildSection(doc, section));
+    json.sections.forEach(section => {
+      buildSection(doc, section);
+    });
   }
   if (Array.isArray(json.footnotes)) {
     buildFootnotes(doc, json.footnotes);
@@ -163,7 +174,8 @@ function jsonToDocbook(json) {
     buildBibliography(doc, json.bibliography);
   }
 
-  return doc.end({ prettyPrint: true });
+  // Use headless: true to exclude XML declaration
+  return doc.end({ prettyPrint: true, headless: true });
 }
 
 module.exports = jsonToDocbook;
