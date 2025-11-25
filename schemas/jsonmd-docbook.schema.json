@@ -2,7 +2,6 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "JSON-Plus-Markdown DocBook Schema",
   "type": "object",
-  "required": ["title", "sections"],
   "properties": {
     "title": {
       "type": "string",
@@ -13,81 +12,90 @@
       "description": "Top-level sections",
       "items": {
         "type": "object",
-        "required": ["title", "content"],
         "properties": {
           "title": {
             "type": "string",
             "description": "Section title"
           },
           "content": {
-            "type": "array",
-            "items": {
-              "oneOf": [
-                {
-                  "type": "object",
-                  "properties": {
-                    "type": { "const": "paragraph" },
-                    "text": { "type": "string", "description": "Markdown text content including emphasis, footnotes, citations" }
-                  },
-                  "required": ["type", "text"],
-                  "additionalProperties": false
-                },
-                {
-                  "type": "object",
-                  "properties": {
-                    "type": { "const": "table" },
-                    "caption": { "type": "string" },
-                    "headers": {
-                      "type": "array",
-                      "items": { "type": "string" }
+            "anyOf": [
+              {
+                "type": "array",
+                "items": {
+                  "oneOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "type": { "const": "paragraph" },
+                        "text": {
+                          "type": "string",
+                          "description": "Markdown text content including emphasis, footnotes, citations"
+                        }
+                      },
+                      "required": ["type", "text"],
+                      "additionalProperties": true
                     },
-                    "rows": {
-                      "type": "array",
-                      "items": {
-                        "type": "array",
-                        "items": { "type": "string" }
-                      }
-                    }
-                  },
-                  "required": ["type", "headers", "rows"],
-                  "additionalProperties": false
-                },
-                {
-                  "type": "object",
-                  "properties": {
-                    "type": { "const": "image" },
-                    "caption": { "type": "string" },
-                    "src": { "type": "string", "format": "uri" },
-                    "alt": { "type": "string" }
-                  },
-                  "required": ["type", "src"],
-                  "additionalProperties": false
-                },
-                {
-                  "type": "object",
-                  "properties": {
-                    "type": { "const": "deflist" },
-                    "items": {
-                      "type": "array",
-                      "items": {
-                        "type": "object",
-                        "properties": {
-                          "term": { "type": "string" },
-                          "definition": { "type": "string" }
+                    {
+                      "type": "object",
+                      "properties": {
+                        "type": { "const": "table" },
+                        "caption": { "type": "string" },
+                        "headers": {
+                          "type": "array",
+                          "items": { "type": "string" }
                         },
-                        "required": ["term", "definition"],
-                        "additionalProperties": false
-                      }
+                        "rows": {
+                          "type": "array",
+                          "items": {
+                            "type": "array",
+                            "items": { "type": "string" }
+                          }
+                        }
+                      },
+                      "required": ["type", "headers", "rows"],
+                      "additionalProperties": true
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "type": { "const": "image" },
+                        "caption": { "type": "string" },
+                        "src": { "type": "string", "format": "uri" },
+                        "alt": { "type": "string" }
+                      },
+                      "required": ["type", "src"],
+                      "additionalProperties": true
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "type": { "const": "deflist" },
+                        "items": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "term": { "type": "string" },
+                              "definition": { "type": "string" }
+                            },
+                            "required": ["term", "definition"],
+                            "additionalProperties": true
+                          }
+                        }
+                      },
+                      "required": ["type", "items"],
+                      "additionalProperties": true
                     }
-                  },
-                  "required": ["type", "items"],
-                  "additionalProperties": false
+                  ]
                 }
-              ]
-            }
+              },
+              {
+                "type": "object"
+              }
+            ]
           }
         },
-        "additionalProperties": false
+        "additionalProperties": true
       }
     },
     "footnotes": {
@@ -99,7 +107,7 @@
           "content": { "type": "string", "description": "Markdown content of the footnote" }
         },
         "required": ["id", "content"],
-        "additionalProperties": false
+        "additionalProperties": true
       }
     },
     "bibliography": {
@@ -117,9 +125,9 @@
           "publisher": { "type": "string" }
         },
         "required": ["id", "title", "authors"],
-        "additionalProperties": false
+        "additionalProperties": true
       }
     }
   },
-  "additionalProperties": false
+  "additionalProperties": true
 }
