@@ -1,5 +1,50 @@
 const xml2js = require('xml2js');
 
+// Handler functions for specific DocBook elements
+const elementHandlers = {
+  linebreak: () => '\n',
+  
+  emphasis: (elements) =>
+    elements.map(e => {
+      const text = convertMixedContent(e._ || e);
+      return e.$?.role === 'bold' ? `*${text}*` : `_${text}_`;
+    }).join(''),
+  
+  literal: (elements) =>
+    elements.map(lit => `\`${convertMixedContent(lit._ || lit)}\``).join(''),
+  
+  footnoteref: (elements) =>
+    elements.map(ref => `[^${ref.$?.linkend || ''}]`).join(''),
+  
+  citation: (elements) =>
+    elements.map(cit => {
+      const id = cit.$?.['xlink:href']?.replace(/^#/, '') || '';
+      return `[@${id}]`;
+    }).join(''),
+  
+  phrase: (elements) =>
+    elements.map(p => {
+      const text = convertMixedContent(p._ || p);
+      if (p.$?.role === 'mark') return `==${text}==`;
+      if (p.$?.role === 'ins') return `++${text}++`;
+      return text;
+    }).join(''),
+  
+  abbrev: (elements) =>
+    elements.map(abbr => convertMixedContent(abbr._ || abbr)).join(''),
+  
+  variablelist: (elements) =>
+    elements.flatMap(vl =>
+      vl.varlistentry?.map(ve => {
+        const term = ve.term?.[0] || '';
+        const def = ve.listitem?.[0].para?.[0] || '';
+        return `${term}\n: ${def}\n`;
+      }) || []
+    ).join('\n'),
+  
+  footnote: () => '', // Handled separately
+};
+
 // Convert mixed content and inline elements to markdown text recursively
 function convertMixedContent(node) {
   if (typeof node === 'string') {
@@ -11,78 +56,12 @@ function convertMixedContent(node) {
   if (typeof node === 'object') {
     let result = '';
     for (const key in node) {
-      switch (key) {
-        case 'linebreak':
-          result += '\n'; // Markdown line break
-          break;  
-        case 'emphasis':
-          // Treat emphasis role="bold" as *text*
-          result += node[key].map(e => {
-            const text = convertMixedContent(e._ || e);
-            if (e.$?.role === 'bold') {
-              return `*${text}*`;
-            }
-            return `_${text}_`; // fallback to _italic_
-          }).join('');
-          break;
-        case 'literal':
-          // Inline code with `code`
-          result += node[key].map(lit => `\`${convertMixedContent(lit._ || lit)}\``).join('');
-          break;
-        case 'footnote':
-          // Footnote text ignored here; footnotes handled separately
-          break;
-        case 'footnoteref':
-          // Footnote reference [^id]
-          result += node[key].map(ref => {
-            const id = ref.$?.linkend || '';
-            return `[^${id}]`;
-          }).join('');
-          break;
-        case 'citation':
-          // Citation reference [@id]
-          result += node[key].map(cit => {
-            const id = cit.$?.['xlink:href']?.replace(/^#/, '') || '';
-            return `[@${id}]`;
-          }).join('');
-          break;
-        case 'phrase':
-          // Marked text with role="mark", inserted text with role="ins"
-          result += node[key].map(p => {
-            const text = convertMixedContent(p._ || p);
-            if (p.$?.role === 'mark') {
-              return `==${text}==`; // marked text
-            }
-            if (p.$?.role === 'ins') {
-              return `++${text}++`; // inserted text
-            }
-            return text;
-          }).join('');
-          break;
-        case 'abbrev':
-          // Abbreviation as *[abbr]: Full text* handled in footnotes/bibliography maybe
-          result += node[key].map(abbr => convertMixedContent(abbr._ || abbr)).join('');
-          break;
-        case 'variablelist':
-          // Convert DocBook definition list to markdown deflist syntax
-          const entries = node[key].flatMap(vl => {
-            return vl.varlistentry?.map(ve => {
-              const term = ve.term?.[0] || '';
-              const def = ve.listitem?.[0].para?.[0] || '';
-              return `${term}\n: ${def}\n`;
-            }) || [];
-          });
-          result += entries.join('\n');
-          break;
-        case '_':
-          result += node._;
-          break;
-        default:
-          // Recursively process other children
-          if (Array.isArray(node[key])) {
-            result += node[key].map(convertMixedContent).join('');
-          }
-          break;
+      if (key === '_') {
+        result += node._;
+      } else if (elementHandlers[key]) {
+        result += elementHandlers[key](node[key]);
+      } else if (Array.isArray(node[key])) {
+        result += node[key].map(convertMixedContent).join('');
       }
     }
     return result;
