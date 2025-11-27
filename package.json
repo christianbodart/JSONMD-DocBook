@@ -4,7 +4,8 @@
   "description": "Conversion and round-trip testing between JSON-plus-markdown and DocBook XML",
   "main": "src/index.js",
   "scripts": {
-    "test": "mocha tests/**/*.test.js --exit"
+    "test": "mocha tests/**/*.test.js --exit",
+    "validate:rng": "node tests/helpers/runRngValidation.js"
   },
   "dependencies": {
     "ajv": "^8.12.0",

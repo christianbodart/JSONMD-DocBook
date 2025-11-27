@@ -1,0 +1,59 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        node-version: [16.x, 18.x]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+
+      - name: Restore tools cache
+        uses: actions/cache@v4
+        with:
+          path: tools
+          key: jing-${{ runner.os }}-v1
+
+      - name: Ensure tools directory
+        run: |
+          mkdir -p tools
+
+      - name: Download Jing (Linux / macOS)
+        if: runner.os != 'Windows'
+        run: |
+          if [ ! -f tools/jing.jar ]; then
+            curl -L -o tools/jing.jar https://repo1.maven.org/maven2/net/sf/jing/jing/20091111/jing-20091111.jar
+          fi
+        shell: bash
+
+      - name: Download Jing (Windows)
+        if: runner.os == 'Windows'
+        run: |
+          if (-not (Test-Path 'tools\jing.jar')) { Invoke-WebRequest -Uri 'https://repo1.maven.org/maven2/net/sf/jing/jing/20091111/jing-20091111.jar' -OutFile 'tools\jing.jar' }
+        shell: powershell
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run unit tests
+        run: npm test
+
+      - name: Run RNG validation
+        env:
+          USE_XML_ID: 'true'
+        run: npm run validate:rng

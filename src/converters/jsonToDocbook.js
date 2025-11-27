@@ -2,6 +2,13 @@ const { create } = require('xmlbuilder2');
 const blockBuilders = require('./handlers/blockBuilders');
 const { markdownToDocbookNodes } = require('./handlers/tokenHandlers');
 
+// Configuration: allow toggling between `xml:id` and `id` via env var
+const useXmlId = process.env.USE_XML_ID !== 'false';
+function idAttr(id) {
+  if (!id) return {};
+  return useXmlId ? { 'xml:id': id } : { id };
+}
+
 // Build sections recursively using handler map for content blocks
 function buildSections(parent, sections) {
   sections.forEach(section => {
@@ -19,7 +26,8 @@ function buildSections(parent, sections) {
 // Build footnotes using a factory function
 function buildFootnotes(parent, footnotes) {
   footnotes.forEach(fn => {
-    const fnEl = parent.ele('footnote', { id: fn.id });
+    const attrs = idAttr(fn.id);
+    const fnEl = parent.ele('footnote', attrs);
     fnEl.ele('para').txt(fn.content);
   });
 }
@@ -28,7 +36,8 @@ function buildFootnotes(parent, footnotes) {
 function buildBibliography(parent, bibliography) {
   const bibEl = parent.ele('bibliography');
   bibliography.forEach(item => {
-    const bibItem = bibEl.ele('bibliomixed', { id: item.id });
+    const attrs = idAttr(item.id);
+    const bibItem = bibEl.ele('bibliomixed', attrs);
     bibItem.ele('title').txt(item.title);
     item.authors.forEach(author => {
       const authorEl = bibItem.ele('author');

@@ -23,7 +23,6 @@ describe('DocBook XML Sample Validation', function () {
     xml2js.parseString(xmlData, { explicitArray: false }, (err, result) => {
       if (err) return done(err);
       parsedJson = result;
-      console.log(JSON.stringify(parsedJson, null, 2));
       done();
     });
   });

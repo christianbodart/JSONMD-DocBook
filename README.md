@@ -56,6 +56,52 @@ npm test
 
 Once jing is available (via any method), RNG validation tests will automatically run and validate all test XML files against `schemas/docbook.rng`.
 
+### Quick RNG validation (project script)
+
+You can validate the XML test outputs (including fragments) with the included helper and runner. The helper will automatically wrap fragments in a minimal DocBook container for validation (it does not modify source files).
+
+- Add `jing.jar` to `tools/jing.jar` (preferred) or install `jing` globally / via Homebrew / npx.
+- Then run:
+
+```powershell
+npm run validate:rng
+```
+
+This command runs `tests/helpers/runRngValidation.js`, which uses `tests/helpers/validateRng.js`.
+
+How fragment validation works
+- If a file is a full DocBook document (e.g., begins with `<book>` or `<article>`), the helper will add missing `xmlns`/`xmlns:xlink` declarations if needed and inject a minimal `<title>` when the RNG requires it.
+- If a file is a fragment (no root or unsupported root), the helper wraps the fragment in a minimal `<article>` (with namespace and `<title>`) so Jing can validate the fragment in context.
+- Temporary files are created for validation and removed afterward; original files remain unchanged.
+
+Why `xml:id`? (short explanation)
+
+The DocBook RELAX NG schema is strict about which attributes it allows on which elements. Many DocBook elements expect identifier attributes to be in the `xml` namespace (i.e. `xml:id`) rather than an unqualified `id` attribute. That is a schema-level constraint, not specific to Jing. The helper converts `id="..."` to `xml:id="..."` in the temporary validation document to avoid spurious validation failures while leaving source files untouched.
+
+If you prefer the converters to output `xml:id` directly, I can update the converters to emit `xml:id` instead of `id`.
+
+### Configuration
+
+- **`USE_XML_ID`**: Control whether converters emit `xml:id` (default: enabled).
+	- Set to `false` to emit plain `id` attributes instead of `xml:id`.
+	- Examples:
+		- PowerShell (Windows):
+
+```powershell
+$env:USE_XML_ID = 'false'
+npm test
+```
+
+		- Bash / macOS / Linux:
+
+```bash
+USE_XML_ID=false npm test
+```
+
+- **CI behavior**: The included GitHub Actions workflow at `.github/workflows/ci.yml` runs unit tests and RNG validation and sets `USE_XML_ID=true` in the CI environment to prefer `xml:id` during validation.
+
+If you'd like the default behaviour changed (for example, default to plain `id`), I can flip the default and update the tests accordingly.
+
 ### Usage
 
 Run all tests (including unit tests and validation):

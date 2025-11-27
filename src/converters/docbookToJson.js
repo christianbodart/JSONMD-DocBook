@@ -1,5 +1,13 @@
 const xml2js = require('xml2js');
 
+// Configuration: allow toggling preferred id attribute order via env var
+const preferXmlId = process.env.USE_XML_ID !== 'false';
+function getIdFromAttrs(attrs) {
+  if (!attrs) return '';
+  if (preferXmlId) return attrs['xml:id'] || attrs.id || '';
+  return attrs.id || attrs['xml:id'] || '';
+}
+
 // Handler functions for specific DocBook elements
 const elementHandlers = {
   linebreak: () => '\n',
@@ -175,7 +183,7 @@ function parseFootnotes(article) {
     const paraContent = fn.para && fn.para[0];
     const content = typeof paraContent === 'string' ? paraContent : getText(paraContent);
     footnotes.push({
-      id: fn.$?.id || '',
+      id: getIdFromAttrs(fn.$),
       content: content || ''
     });
   });
@@ -201,7 +209,7 @@ function parseBibliography(article) {
       });
 
       bibliography.push({
-        id: getText(item.$?.id) || '',
+        id: getIdFromAttrs(item.$) || getText(item.$?.id) || '',
         title: getText(item.title?.[0] || item.title) || '',
         authors: authors || [],
         year: getText(item.date?.[0] || item.date) || '',
