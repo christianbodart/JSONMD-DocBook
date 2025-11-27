@@ -1,0 +1,164 @@
+<article>
+  <section>
+    <title>Document Title</title>
+    <section>
+      <title>Introduction</title>
+      <para>
+        This is a paragraph introducing the document. Markdown allows you
+        to format <emphasis role="strong">bold text</emphasis>,
+        <emphasis>italic text</emphasis>, and even
+        <emphasis role="strong"><emphasis>bold and italic
+        text</emphasis></emphasis>.
+      </para>
+    </section>
+    <section>
+      <title>Headings</title>
+      <para>
+      </para>
+    </section>
+  </section>
+  <section>
+    <title>H1 Heading</title>
+    <section>
+      <title>H2 Heading</title>
+      <section>
+        <title>H3 Heading</title>
+        <section>
+          <title>H4 Heading</title>
+          <section>
+            <title>H5 Heading</title>
+            <simplesect>
+              <title>H6 Heading</title>
+              <para>
+              </para>
+            </simplesect>
+          </section>
+        </section>
+      </section>
+    </section>
+    <section>
+      <title>Emphasis</title>
+      <itemizedlist spacing="compact">
+        <listitem>
+          <para>
+            <emphasis>Italic</emphasis> text is wrapped with single
+            asterisks or underscores.
+          </para>
+        </listitem>
+        <listitem>
+          <para>
+            <emphasis role="strong">Bold</emphasis> text uses double
+            asterisks or underscores.
+          </para>
+        </listitem>
+        <listitem>
+          <para>
+            <emphasis role="strong"><emphasis>Bold and
+            italic</emphasis></emphasis> uses three asterisks or
+            underscores.
+          </para>
+        </listitem>
+      </itemizedlist>
+    </section>
+    <section>
+      <title>Lists</title>
+      <section>
+        <title>Unordered list</title>
+        <itemizedlist spacing="compact">
+          <listitem>
+            <para>
+              Item 1
+            </para>
+          </listitem>
+          <listitem>
+            <para>
+              Item 2
+            </para>
+            <itemizedlist spacing="compact">
+              <listitem>
+                <para>
+                  Subitem 2.1
+                </para>
+              </listitem>
+              <listitem>
+                <para>
+                  Subitem 2.2
+                </para>
+              </listitem>
+            </itemizedlist>
+          </listitem>
+          <listitem>
+            <para>
+              Item 3
+            </para>
+          </listitem>
+        </itemizedlist>
+      </section>
+      <section>
+        <title>Ordered list</title>
+        <orderedlist numeration="arabic" spacing="compact">
+          <listitem>
+            <para>
+              First item
+            </para>
+          </listitem>
+          <listitem>
+            <para>
+              Second item
+            </para>
+            <orderedlist numeration="arabic" spacing="compact">
+              <listitem>
+                <para>
+                  Subitem 2.1
+                </para>
+              </listitem>
+              <listitem>
+                <para>
+                  Subitem 2.2
+                </para>
+              </listitem>
+            </orderedlist>
+          </listitem>
+          <listitem>
+            <para>
+              Third item
+            </para>
+          </listitem>
+        </orderedlist>
+      </section>
+    </section>
+    <section>
+      <title>Links and Images</title>
+      <para>
+        <link xlink:href="https://www.openai.com">OpenAI is a great resource.</link>
+      </para>
+      <figure>
+        <title>OpenAI Logo</title>
+        <mediaobject>
+          <imageobject>
+            <imagedata fileref="https://openai.com/favicon.ico"/>
+          </imageobject>
+          <textobject><phrase>OpenAI Logo</phrase></textobject>
+        </mediaobject>
+      </figure>
+    </section>
+    <section>
+      <title>Blockquote</title>
+      <blockquote>
+        <para>
+          This is a blockquote used to denote quoted text or citations.
+        </para>
+      </blockquote>
+    </section>
+    <section>
+      <title>Code</title>
+      <para>
+        Inline code:
+        <literal>console.log("Hello, world!")</literal>
+      </para>
+      <para>
+        Code block:
+      </para>
+    </section>
+  </section>
+</article>

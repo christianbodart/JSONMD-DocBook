@@ -20,7 +20,7 @@ Technical - Create a JavaScript toolkit for bi-directional conversion, validatio
 
 - Node.js (version 14 or higher)  
 - Installed dependencies via `npm install`  
-- (for running tests) pandoc client: https://pandoc.org/installing.html
+- (optional, recommended) Jing for RNG schema validation: https://relaxng.org/jing.html
 
 ### Installation
 
@@ -32,13 +32,58 @@ Clone the repository:
 
 `npm install`
 
+### Setting Up RNG Validation (Optional)
+
+To enable automatic validation of generated XML against the DocBook RELAX NG schema, install Jing:
+
+**Option 1: Add jing jar to project (Windows/any OS):**
+1. Download jing from https://relaxng.org/jing.html
+2. Copy the jar file (e.g., `jing-20091111.jar`) to the `tools/` directory
+3. Rename it to `jing.jar`
+4. Run `npm test` — RNG validation will automatically use it
+
+**Option 2: macOS (via Homebrew):**
+```bash
+brew install jing
+npm test
+```
+
+**Option 3: Any OS (global npm):**
+```bash
+npm install -g jing
+npm test
+```
+
+Once jing is available (via any method), RNG validation tests will automatically run and validate all test XML files against `schemas/docbook.rng`.
+
 ### Usage
 
-Run conversion scripts or tests:
+Run all tests (including unit tests and validation):
 
 `npm test`
 
+Run only core functionality tests (skips RNG validation if jing not installed):
+
+`npm test -- --grep "^(?!.*RNG)"`
+
 Extend or integrate conversion functions located in the `src/converters/` directory.
+
+## Testing
+
+The test suite includes:
+
+- **Unit Tests** — converter functions, ID checks, schema validation
+- **Integration Tests** — round-trip conversions with static expected outputs
+- **RNG Validation** (optional) — validates generated XML against DocBook RELAX NG schema
+
+Test fixtures are stored in:
+- `tests/inputs/` — JSON and XML input files
+- `tests/outputs/` — expected output files for comparison
+
+To run a specific test file:
+```bash
+npx mocha tests/jsonToDocbook.test.js
+```
 
 ## Repository Structure
 

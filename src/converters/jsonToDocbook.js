@@ -38,7 +38,7 @@ function buildBibliography(parent, bibliography) {
       pn.ele('surname').txt(parts.slice(1).join(' ') || '');
     });
     if (item.year) bibItem.ele('date').txt(item.year);
-    if (item.publisher) bibItem.ele('publisher').txt(item.publisher);
+    if (item.publisher) bibItem.ele('publisher').ele('publishername').txt(item.publisher);
   });
 }
 
