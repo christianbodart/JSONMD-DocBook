@@ -98,10 +98,29 @@ function parseParagraphs(paras) {
   }));
 }
 
+// Safely extract text from various xml2js node shapes
+function getText(node) {
+  if (node == null) return '';
+  if (typeof node === 'string') return node;
+  if (Array.isArray(node)) return getText(node[0]);
+  if (typeof node === 'object') {
+    if (typeof node._ === 'string') return node._;
+    // If the node directly contains text-like children, try to join them
+    if (node.hasOwnProperty('_')) return String(node._ || '');
+    // Fallback: try to stringify primitive properties
+    for (const k of Object.keys(node)) {
+      const v = node[k];
+      if (typeof v === 'string') return v;
+      if (Array.isArray(v) && typeof v[0] === 'string') return v[0];
+    }
+  }
+  return '';
+}
+
 // Parse sections recursively
 function parseSections(sections) {
   return sections.map(section => {
-    const title = section.title?.[0] || '';
+    const title = getText(section.title?.[0] || section.title) || '';
     let content = [];
 
     if (section.para) {
@@ -133,9 +152,9 @@ function parseSections(sections) {
 // Parse tables
 function parseTables(tables) {
   return tables.map(table => {
-    const caption = table.caption?.[0] || '';
-    const headers = table.tgroup?.[0]?.thead?.[0]?.row?.[0]?.entry?.map(e => e._) || [];
-    const rows = table.tgroup?.[0]?.tbody?.[0]?.row?.map(row => row.entry.map(e => e._ || '')) || [];
+    const caption = getText(table.caption?.[0] || table.caption) || '';
+    const headers = table.tgroup?.[0]?.thead?.[0]?.row?.[0]?.entry?.map(e => getText(e)) || [];
+    const rows = table.tgroup?.[0]?.tbody?.[0]?.row?.map(row => row.entry.map(e => getText(e) || '')) || [];
 
     return {
       type: 'table',
@@ -149,7 +168,7 @@ function parseTables(tables) {
 // Parse figures
 function parseFigures(figures) {
   return figures.map(figure => {
-    const caption = figure.title?.[0] || '';
+    const caption = getText(figure.title?.[0] || figure.title) || '';
     const mediaobject = figure.mediaobject?.[0];
     const imageData = mediaobject?.imageobject?.[0]?.imagedata?.[0].$ || {};
     const src = imageData.fileref || '';
@@ -187,20 +206,21 @@ function parseBibliography(article) {
   article.bibliography.forEach(bib => {
     if (!bib.bibliomixed) return;
     bib.bibliomixed.forEach(item => {
+      const authors = (item.author || []).map(a => {
+        // author may contain personname or direct personname object
+        const pn = (a.personname && a.personname[0]) || a.personname || a;
+        const first = getText(pn.firstname || pn.firstname?.[0]);
+        const last = getText(pn.surname || pn.surname?.[0]);
+        const combined = `${first} ${last}`.trim();
+        return combined || getText(a);
+      });
+
       bibliography.push({
-        id: item.$?.id || '',
-        title: item.title?.[0] || '',
-        authors: item.author?.map(a => {
-          const pn = a.personname?.[0];
-          if (pn) {
-            const first = pn.firstname?.[0] || '';
-            const last = pn.surname?.[0] || '';
-            return `${first} ${last}`.trim();
-          }
-          return '';
-        }) || [],
-        year: item.date?.[0] || '',
-        publisher: item.publisher?.[0] || ''
+        id: getText(item.$?.id) || '',
+        title: getText(item.title?.[0] || item.title) || '',
+        authors: authors || [],
+        year: getText(item.date?.[0] || item.date) || '',
+        publisher: getText(item.publisher?.[0] || item.publisher) || ''
       });
     });
   });
@@ -226,7 +246,7 @@ async function docbookToJson(docbookXml) {
   }
 
   return {
-    title: article.title?.[0] || '',
+    title: getText(article.title?.[0] || article.title) || '',
     sections: parseSections(article.section || []),
     footnotes: parseFootnotes(article),
     bibliography: parseBibliography(article)

@@ -12,21 +12,15 @@
          ns="http://docbook.org/ns/docbook">
 
 <!--
-This file is part of DocBook V5.1
-
-Copyright 1992-2015 HaL Computer Systems, Inc.,
-O'Reilly & Associates, Inc., ArborText, Inc., Fujitsu Software
-Corporation, Norman Walsh, Sun Microsystems, Inc., and the
-Organization for the Advancement of Structured Information
-Standards (OASIS).
-
-Permission to use, copy, modify and distribute the DocBook schema
-and its accompanying documentation for any purpose and without fee
-is hereby granted in perpetuity, provided that the above copyright
-notice and this paragraph appear in all copies. The copyright
-holders make no representation about the suitability of the schema
-for any purpose. It is provided "as is" without expressed or implied
-warranty.
+  DocBook Version 5.1
+  OASIS Standard 
+  22 November 2016
+  Copyright (c) OASIS Open 2016. All Rights Reserved.
+  Source: http://docs.oasis-open.org/docbook/docbook/v5.1/os/schemas/rng/
+  Link to latest version of specification: http://docs.oasis-open.org/docbook/docbook/v5.1/docbook-v5.1.html
+     -->
+<!--
+This file is part of DocBook V5.1-OS
 
 If you modify the DocBook schema in any way, label your schema as a
 variant of DocBook. See the reference documentation
@@ -40,15 +34,6 @@ information, see http://www.oasis-open.org/docbook/.
 ======================================================================
 -->
 
-   <s:ns prefix="rng" uri="http://relaxng.org/ns/structure/1.0"/>
-   <s:ns prefix="s" uri="http://purl.oclc.org/dsdl/schematron"/>
-   <s:ns prefix="db" uri="http://docbook.org/ns/docbook"/>
-   <s:ns prefix="a" uri="http://relaxng.org/ns/compatibility/annotations/1.0"/>
-   <s:ns prefix="ctrl" uri="http://nwalsh.com/xmlns/schema-control/"/>
-   <s:ns prefix="html" uri="http://www.w3.org/1999/xhtml"/>
-   <s:ns prefix="xlink" uri="http://www.w3.org/1999/xlink"/>
-   <s:ns prefix="mml" uri="http://www.w3.org/1998/Math/MathML"/>
-   <s:ns prefix="svg" uri="http://www.w3.org/2000/svg"/>
    <start>
       <choice>
          <choice>
@@ -7055,7 +7040,8 @@ information, see http://www.oasis-open.org/docbook/.
 
       <define name="db.subscript">
          <element name="subscript">
-            <a:documentation>A subscript (as in H₂O, the molecular formula for water)</a:documentation>
+            <a:documentation>A subscript (as in H2
+O, the molecular formula for water)</a:documentation>
             <ref name="db.subscript.attlist"/>
             <ref name="db._text"/>
          </element>
@@ -7079,7 +7065,8 @@ information, see http://www.oasis-open.org/docbook/.
 
       <define name="db.superscript">
          <element name="superscript">
-            <a:documentation>A superscript (as in x², the mathematical notation for x multiplied by itself)</a:documentation>
+            <a:documentation>A superscript (as in x2
+, the mathematical notation for x multiplied by itself)</a:documentation>
             <ref name="db.superscript.attlist"/>
             <ref name="db._text"/>
          </element>
@@ -10968,12 +10955,9 @@ information, see http://www.oasis-open.org/docbook/.
 
       <define name="db.see.class.attribute">
          <attribute name="class">
-            <a:documentation>Identifies the class of 'see'</a:documentation>
             <choice>
                <value>normal</value>
-               <a:documentation>Normal</a:documentation>
                <value>under</value>
-               <a:documentation>See 'under'</a:documentation>
             </choice>
          </attribute>
       </define>
@@ -11009,12 +10993,9 @@ information, see http://www.oasis-open.org/docbook/.
 
       <define name="db.seealso.class.attribute">
          <attribute name="class">
-            <a:documentation>Identifies the class of 'seealso'</a:documentation>
             <choice>
                <value>normal</value>
-               <a:documentation>Normal</a:documentation>
                <value>under</value>
-               <a:documentation>See 'under'</a:documentation>
             </choice>
          </attribute>
       </define>
