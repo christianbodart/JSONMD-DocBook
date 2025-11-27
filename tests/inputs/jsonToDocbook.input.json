@@ -1,0 +1,17 @@
+{
+  "title": "My Title",
+  "sections": [
+    {
+      "title": "Sec 1",
+      "content": [
+        { "type": "paragraph", "text": "Hello world" }
+      ]
+    }
+  ],
+  "footnotes": [
+    { "id": "f1", "content": "Footnote text" }
+  ],
+  "bibliography": [
+    { "id": "b1", "title": "Book", "authors": ["John Doe"], "year": "2020", "publisher": "Pub" }
+  ]
+}

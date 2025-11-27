@@ -92,10 +92,13 @@ function convertMixedContent(node) {
 
 // Parse paragraphs including markdown inline conversions
 function parseParagraphs(paras) {
-  return paras.map(p => ({
-    type: 'paragraph',
-    text: convertMixedContent(p)
-  }));
+  return paras.map(p => {
+    const text = typeof p === 'string' ? p : (p._ || convertMixedContent(p));
+    return {
+      type: 'paragraph',
+      text
+    };
+  });
 }
 
 // Safely extract text from various xml2js node shapes
@@ -189,9 +192,12 @@ function parseFootnotes(article) {
   if (!article.footnote) return footnotes;
 
   article.footnote.forEach(fn => {
+    // fn.para is an array; take first element's text or use getText
+    const paraContent = fn.para && fn.para[0];
+    const content = typeof paraContent === 'string' ? paraContent : getText(paraContent);
     footnotes.push({
       id: fn.$?.id || '',
-      content: convertMixedContent(fn.para || [])
+      content: content || ''
     });
   });
 
@@ -234,8 +240,7 @@ async function docbookToJson(docbookXml) {
   preserveChildrenOrder: true,
   trim: false,              // Do not trim whitespace
   explicitArray: true,
-  charsAsChildren: true,    // Preserve text nodes as children
-  includeWhiteChars: true,  // Include whitespace text nodes
+  charsAsChildren: false,   // Disable to avoid text node duplication
   charkey: '_'
 });
   const result = await parser.parseStringPromise(docbookXml);

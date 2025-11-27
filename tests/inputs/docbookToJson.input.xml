@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<article>
+  <title>My Title</title>
+  <section>
+    <title>Sec 1</title>
+    <para>Paragraph text</para>
+  </section>
+  <footnote id="f1"><para>Footnote text</para></footnote>
+  <bibliography>
+    <bibliomixed id="b1">
+      <title>Book</title>
+      <author>
+        <personname>
+          <firstname>John</firstname>
+          <surname>Doe</surname>
+        </personname>
+      </author>
+      <date>2020</date>
+      <publisher>Pub</publisher>
+    </bibliomixed>
+  </bibliography>
+</article>
