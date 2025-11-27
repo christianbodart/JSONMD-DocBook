@@ -17,7 +17,7 @@ describe('DocBook XML Sample Validation', function () {
   let parsedJson;
 
   before(function (done) {
-    const filePath = path.resolve(__dirname, './inputs/docbook-sample.xml');
+    const filePath = path.resolve(__dirname, './inputs/partial-docbook-sample.xml');
     xmlData = fs.readFileSync(filePath, 'utf8');
     // Parse XML to JS object
     xml2js.parseString(xmlData, { explicitArray: false }, (err, result) => {
